@@ -1,0 +1,166 @@
+/* Style pour une interface WOW avec un thème sombre */
+
+:root {
+  --bg-color: #121212;
+  /* Fond principal */
+  --card-bg: #1f2937;
+  /* Fond des cartes */
+  --text-color: #e4e4e7;
+  /* Texte principal */
+  --accent-color: #0ea5e9;
+  /* Accent (bleu cyan) */
+  --interactive-color: #22c55e;
+  /* Vert interactif */
+  --error-color: #ef4444;
+  /* Rouge pour erreurs */
+  --font-family: 'Roboto', sans-serif;
+  /* Typographie moderne */
+}
+
+/* Fond global et typographie */
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Conteneur principal */
+.home-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* En-tête */
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  color: var(--accent-color);
+  margin: 0;
+  text-shadow: 0 0 10px var(--accent-color);
+}
+
+.header p {
+  font-size: 1.2rem;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+/* Erreurs et chargement */
+.error {
+  color: var(--error-color);
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.loading {
+  text-align: center;
+  font-style: italic;
+}
+
+/* Section du calendrier */
+.calendar-section {
+  margin-bottom: 40px;
+}
+
+.calendar-section h2 {
+  font-size: 1.8rem;
+  color: var(--interactive-color);
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--interactive-color);
+  padding-bottom: 5px;
+  text-align: center;
+}
+
+/* Liste des logs */
+.logs-section h2 {
+  font-size: 1.8rem;
+  color: var(--accent-color);
+  margin-bottom: 20px;
+}
+
+.log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.log-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.log-list li:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.log-date {
+  font-weight: 600;
+}
+
+.log-hours {
+  color: var(--interactive-color);
+  font-weight: bold;
+}
+
+/* Bouton interactif (recharger les logs) */
+.reload-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--interactive-color);
+  color: var(--bg-color);
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 20px auto;
+}
+
+.reload-button:hover {
+  background-color: var(--accent-color);
+}
+.total-hours {
+  background-color: var(--card-bg);
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  text-align: center;
+  color: var(--text-color);
+  font-size: 1.2rem;
+}
+
+.total-hours strong {
+  color: var(--interactive-color);
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .header p {
+    font-size: 1rem;
+  }
+
+  .log-list li {
+    font-size: 0.9rem;
+  }
+}

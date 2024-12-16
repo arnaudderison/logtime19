@@ -1,0 +1,102 @@
+/* Conteneur principal */
+.calendar-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Grille principale */
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  /* Colonnes pour 7 jours */
+  grid-auto-rows: 50px;
+  /* Taille des cellules */
+  gap: 5px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.month-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+/* Cellules des jours */
+.day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #ebedf0;
+  border-radius: 4px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Couleurs dynamiques */
+.day.none {
+  background-color: #ebedf0;
+  color: black;
+}
+
+.day.low {
+  background-color: #c6e48b;
+  /* Vert clair */
+}
+
+.day.medium {
+  background-color: #7bc96f;
+  /* Vert moyen */
+}
+
+.day.high {
+  background-color: #239a3b;
+  /* Vert foncé */
+}
+
+/* Effet au survol */
+.day:hover {
+  transform: scale(1.1);
+  z-index: 10;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Affichage dynamique des heures */
+.hover-display {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .calendar {
+    grid-template-columns: repeat(7, 1fr);
+    /* Toujours 7 colonnes */
+    grid-auto-rows: 40px;
+    /* Réduire la taille des cellules */
+  }
+
+  .day {
+    font-size: 12px;
+  }
+
+  .hover-display {
+    font-size: 10px;
+  }
+}
