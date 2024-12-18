@@ -7,44 +7,41 @@ import Calendar from "./Calendar";
 
 type Log = {
   begin_at: string;
-  end_at: string;
+  end_at: string | null;
   host: string;
 };
 
 function Home() {
   const { user } = useAuth();
   const [logs, setLogs] = useState<Log[]>([]);
+  const [totalMonthHours, setTotalMonthHours] = useState<string | null>(null);
+  const [totalWeeklyHours, setTotalWeeklyHours] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchLogs = async () => {
-    if (!user) return;
+  const splitIntervalsByDay = (start: Date, end: Date) => {
+    const intervals: { start: Date; end: Date }[] = [];
+    let currentStart = new Date(start);
 
-    setLoading(true);
-    setError(null);
+    while (currentStart < end) {
+      const dayEnd = new Date(currentStart);
+      dayEnd.setUTCHours(23, 59, 59, 999);
 
-    try {
-      const response = await axios.get<Log[]>(
-        `${import.meta.env.VITE_API_42_URI}/logs`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
-      );
-      setLogs(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Erreur inconnue");
-    } finally {
-      setLoading(false);
+      intervals.push({
+        start: new Date(currentStart),
+        end: dayEnd < end ? dayEnd : new Date(end),
+      });
+
+      currentStart = new Date(dayEnd.getTime() + 1);
     }
+
+    return intervals;
   };
 
   const mergeIntervals = (intervals: { start: Date; end: Date }[]) => {
     if (intervals.length === 0) return [];
 
     intervals.sort((a, b) => a.start.getTime() - b.start.getTime());
-
     const merged: { start: Date; end: Date }[] = [intervals[0]];
 
     for (let i = 1; i < intervals.length; i++) {
@@ -61,74 +58,76 @@ function Home() {
     return merged;
   };
 
-  const calculateTotalHours = () => {
-    const now = new Date();
-    const currentMonth = now.getUTCMonth();
-    const currentYear = now.getUTCFullYear();
+  const calculateTotalHours = (logs: Log[], startDate: Date, endDate: Date): number => {
+    const intervals: { start: Date; end: Date }[] = logs.flatMap((log) => {
+      const logStart = new Date(log.begin_at);
+      const logEnd = log.end_at ? new Date(log.end_at) : new Date();
+      const effectiveStart = logStart > startDate ? logStart : startDate;
+      const effectiveEnd = logEnd < endDate ? logEnd : endDate;
 
-    const logsForCurrentMonth = logs.filter((log) => {
-      const logDate = new Date(log.begin_at);
-      return (
-        logDate.getUTCMonth() === currentMonth &&
-        logDate.getUTCFullYear() === currentYear
-      );
+      return effectiveStart < effectiveEnd
+        ? splitIntervalsByDay(effectiveStart, effectiveEnd)
+        : [];
     });
 
-    const dayMap: { [key: string]: { start: Date; end: Date }[] } = {};
+    const mergedIntervals = mergeIntervals(intervals);
 
-    logsForCurrentMonth.forEach((log) => {
-      const start = new Date(log.begin_at); // UTC
-      const end = new Date(log.end_at); // UTC
-
-      let current = new Date(start);
-
-      while (current <= end) {
-        const dayKey = current.toISOString().split("T")[0];
-        const dayStart = new Date(dayKey + "T00:00:00Z"); // Start of the day in UTC
-        const dayEnd = new Date(dayKey + "T23:59:59.999Z"); // End of the day in UTC
-
-        const effectiveStart = current > dayStart ? new Date(current) : dayStart;
-        const effectiveEnd = end < dayEnd ? new Date(end) : dayEnd;
-
-        if (!dayMap[dayKey]) {
-          dayMap[dayKey] = [];
-        }
-
-        dayMap[dayKey].push({ start: effectiveStart, end: effectiveEnd });
-
-        current = new Date(dayStart);
-        current.setUTCDate(current.getUTCDate() + 1);
-      }
-    });
-
-    const totalHours = Object.keys(dayMap).reduce((sum, dayKey) => {
-      const intervals = mergeIntervals(dayMap[dayKey]);
-      const hours = intervals.reduce((daySum, interval) => {
-        const diffHours =
-          (interval.end.getTime() - interval.start.getTime()) / (1000 * 60 * 60);
-        return daySum + diffHours;
-      }, 0);
-      return sum + hours;
+    return mergedIntervals.reduce((sum, interval) => {
+      return sum + (interval.end.getTime() - interval.start.getTime()) / (1000 * 60 * 60);
     }, 0);
-
-    return formatHours(totalHours);
   };
 
-  const formatHours = (hours: number) => {
+  const formatHours = (hours: number): string => {
     const totalMinutes = Math.round(hours * 60);
-    const hh = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
-    const mm = String(totalMinutes % 60).padStart(2, "0");
-    return mm === "00" ? `${hh}h` : `${hh}h${mm}`;
+    const hh = Math.floor(totalMinutes / 60).toString();
+    const mm = (totalMinutes % 60).toString().padStart(2, "0");
+    return `${hh}h${mm}`;
   };
 
-  // Format dates for Belgium timezone
-  const formatDateForBelgium = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("fr-FR", {
-      timeZone: "Europe/Brussels",
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(date);
+  const calculateTotals = (logs: Log[]) => {
+    const now = new Date();
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setUTCHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setUTCHours(23, 59, 59, 999);
+
+    const monthHours = calculateTotalHours(logs, startOfMonth, endOfMonth);
+    const weekHours = calculateTotalHours(logs, startOfWeek, endOfWeek);
+
+    setTotalMonthHours(formatHours(monthHours));
+    setTotalWeeklyHours(formatHours(weekHours));
+  };
+
+  const fetchLogs = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get<Log[]>(
+        `${import.meta.env.VITE_API_42_URI}/logs`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+
+      setLogs(response.data);
+      calculateTotals(response.data);
+    } catch (err: any) {
+      setError("Erreur lors de la récupération des données.");
+      console.error("Erreur :", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -143,10 +142,10 @@ function Home() {
       </header>
 
       <main>
-        {loading && <p className="loading">Chargement des logtimes...</p>}
+        {loading && <p className="loading">Chargement des données...</p>}
         {error && <p className="error">{error}</p>}
 
-        {!loading && logs.length > 0 && (
+        {!loading && (
           <>
             <section className="calendar-section">
               <h2>Calendrier</h2>
@@ -156,13 +155,16 @@ function Home() {
             <section className="logs-section">
               <div className="total-hours">
                 <p>
-                  Total des heures du mois : <strong>{calculateTotalHours()}</strong>
+                  <strong>Total des heures du mois :</strong> {totalMonthHours || "0h"}
+                </p>
+                <p>
+                  <strong>Total des heures de la semaine :</strong> {totalWeeklyHours || "0h"}
                 </p>
               </div>
 
               <div className="button-container">
                 <button className="reload-button" onClick={fetchLogs}>
-                  Mettre à jour les logs
+                  Mettre à jour les données
                 </button>
               </div>
 
@@ -172,10 +174,10 @@ function Home() {
                   <li key={i}>
                     <span>Poste : {log.host}</span>
                     <span className="log-date">
-                      Début : {formatDateForBelgium(log.begin_at)}
+                      Début : {new Date(log.begin_at).toLocaleString("fr-FR")}
                     </span>
                     <span className="log-date">
-                      Fin : {formatDateForBelgium(log.end_at)}
+                      Fin : {log.end_at ? new Date(log.end_at).toLocaleString("fr-FR") : "En cours"}
                     </span>
                   </li>
                 ))}
