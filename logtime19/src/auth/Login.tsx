@@ -16,6 +16,7 @@ function Login() {
   };
 
   useEffect(() => {
+    console.log(import.meta.env.VITE_API_42_URI);
     setBusy(true);
     if (localStorage.getItem('access_token')) {
       getAuth()

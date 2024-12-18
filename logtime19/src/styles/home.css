@@ -1,23 +1,13 @@
-/* Style pour une interface WOW avec un thème sombre */
-
 :root {
   --bg-color: #121212;
-  /* Fond principal */
   --card-bg: #1f2937;
-  /* Fond des cartes */
   --text-color: #e4e4e7;
-  /* Texte principal */
   --accent-color: #0ea5e9;
-  /* Accent (bleu cyan) */
   --interactive-color: #22c55e;
-  /* Vert interactif */
   --error-color: #ef4444;
-  /* Rouge pour erreurs */
   --font-family: 'Roboto', sans-serif;
-  /* Typographie moderne */
 }
 
-/* Fond global et typographie */
 body {
   margin: 0;
   font-family: var(--font-family);
@@ -27,14 +17,12 @@ body {
   overflow-x: hidden;
 }
 
-/* Conteneur principal */
 .home-container {
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
 
-/* En-tête */
 .header {
   text-align: center;
   margin-bottom: 30px;
@@ -53,7 +41,6 @@ body {
   opacity: 0.8;
 }
 
-/* Erreurs et chargement */
 .error {
   color: var(--error-color);
   font-weight: bold;
@@ -66,7 +53,6 @@ body {
   font-style: italic;
 }
 
-/* Section du calendrier */
 .calendar-section {
   margin-bottom: 40px;
 }
@@ -80,7 +66,6 @@ body {
   text-align: center;
 }
 
-/* Liste des logs */
 .logs-section h2 {
   font-size: 1.8rem;
   color: var(--accent-color);
@@ -118,7 +103,6 @@ body {
   font-weight: bold;
 }
 
-/* Bouton interactif (recharger les logs) */
 .reload-button {
   display: inline-block;
   padding: 10px 20px;
@@ -150,7 +134,8 @@ body {
 .total-hours strong {
   color: var(--interactive-color);
 }
-/* Responsive */
+
+
 @media (max-width: 768px) {
   .header h1 {
     font-size: 2rem;
